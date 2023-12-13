@@ -1,0 +1,35 @@
+pipeline{ 
+
+    agent any 
+    environment {
+        AWS_ACCESS_KEY_ID="${env.AWS_ACCESS_KEY_ID}" 
+        AWS_SECRET_ACCESS_KEY="${env.AWS_SECRET_ACCESS_KEY}" 
+        AWS_REGION=('us-east-1')
+    
+
+        
+        
+    }
+    stages{
+    stage('login to aws') {
+            steps {
+                sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 104443909180.dkr.ecr.us-east-1.amazonaws.com"
+                //sh "aws lambda invoke --function-name hello_worlds --payload '{"key1":"value1"}' out --log-type Tail"
+}
+}
+
+        stage('lambda_test_function'){
+    steps{
+        script {
+                    def lambdaFunctionName = 'hello_worlds'
+                    def testEvent = '{"key1":"value1" ,"key2":"value2" ,"key3":"value3"}'
+ 
+                    sh "aws lambda invoke --function-name ${lambdaFunctionName} --payload '${testEvent}' --region us-east-1 out --log-type Tail"
+                }
+
+    }
+}     
+    }
+}
+
+
