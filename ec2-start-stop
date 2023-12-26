@@ -1,0 +1,121 @@
+[] launch 2 instance  
+
+in first instance install  
+
+ 
+
+ 
+
+[] sudo apt update 
+
+[] sudo apt install python3-pip 
+
+[]pip – version 
+
+[] pip3 install boto3 
+
+[] apt install awscli 
+
+[] aws configure  
+
+[] vi ec2_control.py 
+
+=====================================================================================================================================================        
+
+import boto3 
+# Initialize the EC2 client 
+
+ec2_client = boto3.client('ec2', region_name='us-east-1') 
+
+  
+
+# Stop an EC2 instance 
+
+ec2_client.stop_instances(InstanceIds=['i-07f54ddd17e5505a8']) 
+
+  
+
+# Start an EC2 instance 
+
+ec2_client.start_instances(InstanceIds=['i-07f54ddd17e5505a8']) 
+
+Here I mentioned second instance ID and region  
+
+ 
+[] python3 ec2_control.py      run the code it will stop and start instance accordingly.  
+========================================================================================================================================================
+
+import boto3                         ====================> adding acess key and scrt acesskey in aws configure
+
+def get_instance_state(instance_id, ec2_client):
+    try:    
+        response = ec2_client.describe_instances(InstanceIds=[instance_id])
+        state = response['Reservations'][0]['Instances'][0]['State']['Name']
+    except:
+        state = 'terminated'
+
+    return state
+
+def start_stop_instance(instance_id, ec2_client):
+
+    current_state = get_instance_state(instance_id, ec2_client)
+
+    if current_state == 'running':
+
+        print(f"Instance {instance_id} is already running. Stopping it.")
+
+        ec2_client.stop_instances(InstanceIds=[instance_id])
+
+    elif current_state == 'stopped':
+
+        print(f"Instance {instance_id} is stopped. Starting it.")
+
+        ec2_client.start_instances(InstanceIds=[instance_id])
+
+    else:
+
+        print(f"Instance {instance_id} is in an unexpected state: {current_state}")
+
+if __name__ == "__main__":
+
+    instance_id = 'i-071f7f7b84dd84056'
+
+    # Create an EC2 client using AWS CLI credentials
+
+    ec2_client = boto3.client('ec2')
+
+    # Start or stop the instance based on its current state
+
+    start_stop_instance(instance_id, ec2_client)
+
+
+==============================================================================================================================================================================
+
+import boto3                              ===============================> adding acess key and scrt acesskey in code 
+def get_instance_state(instance_id, ec2_client):
+   response = ec2_client.describe_instances(InstanceIds=[instance_id])
+   state = response['Reservations'][0]['Instances'][0]['State']['Name']
+   return state
+def start_stop_instance(instance_id, ec2_client):
+   current_state = get_instance_state(instance_id, ec2_client)
+   if current_state == 'running':
+       print(f"Instance {instance_id} is already running. Stopping it.")
+       ec2_client.stop_instances(InstanceIds=[instance_id])
+   elif current_state == 'stopped':
+       print(f"Instance {instance_id} is stopped. Starting it.")
+       ec2_client.start_instances(InstanceIds=[instance_id])
+   else:
+       print(f"Instance {instance_id} is in an unexpected state: {current_state}")
+if __name__ == "__main__":
+   instance_id = 'your_instance_id'
+   # Specify your AWS credentials
+   aws_access_key_id = 'AKIARQUKXSQ6IAQTZCIC'
+   aws_secret_access_key = '2woPik33c13xIqv7f5yLFAWXZJfYDp+gVDCjKoIg'
+   # Specify the AWS region
+   region_name = 'us-east-1'
+   # Create an EC2 client
+   ec2_client = boto3.client('ec2', aws_access_key_id=aws_access_key_id,
+                             aws_secret_access_key=aws_secret_access_key, region_name=region_name)
+   # Start or stop the instance based on its current state
+   start_stop_instance(instance_id, ec2_client)
+ 
