@@ -45,7 +45,7 @@ Here I mentioned second instance ID and region
 [] python3 ec2_control.py      run the code it will stop and start instance accordingly.  
 ========================================================================================================================================================
 
-import boto3                         ====================> adding acess key and scrt acesskey in aws configure
+import boto3                         ====================> adding acess key and scrt acesskey in aws configure (in CLI)
 
 def get_instance_state(instance_id, ec2_client):
     try:    
@@ -117,5 +117,16 @@ if __name__ == "__main__":
    ec2_client = boto3.client('ec2', aws_access_key_id=aws_access_key_id,
                              aws_secret_access_key=aws_secret_access_key, region_name=region_name)
    # Start or stop the instance based on its current state
-   start_stop_instance(instance_id, ec2_client)
+   start_stop_instance(instance_id, ec2_client)    
+==================================================================================================================
+[] here we mentioned aws credentials in pythonfile so we need to converte python file into excutable file (.exe)
+[] we need inatall pyinstaller (pip install pyinstaller) 
+[] we need to move pythonfile folder 
+[] cd pythonfile folder 
+[] pyinstaller --onefile pythonfile.py    ------->command 
+[] after this it will create dist folder move to dist folder. in that dist folder one file will create
+[] ./filename ------------------> in ubuntu server 
+[]filename   --------------------> in windows server 
+[] 
+
  
