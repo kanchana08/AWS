@@ -128,5 +128,6 @@ if __name__ == "__main__":
 [] ./filename ------------------> to run the file in ubuntu server 
 []filename   -------------------->to run the file  in windows server 
 [] 
+[] executable file it will help to keep the code securily no one can watch the file code( credentials are imortant)  
 
  
