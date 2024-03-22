@@ -1,0 +1,23 @@
+
+copy the file from one server to anther server
+when server have same vpc,subnet,keypair  
+
+
+server1
+ sudo su -
+  cd /tmp
+   vi kanchana.pem   (.pem key when we create keypair there we will get copy that pem key )
+    chmod 777 kanchana.pem
+	 cd ..
+	  cat > file2
+	   chmod 700 /tmp/kanchana.pem
+	   we have to run the command in file path then only it will work 
+	  scp -i /tmp/kanchana.pem file1 ubuntu@54.210.95.236:/var/opt/test   (path where we want to move server1 to server2)
+	   
+	   
+	   server2
+	   cd /var/opt
+		 mkdir test
+   chmod 777 test
+   cd test
+    pwd
