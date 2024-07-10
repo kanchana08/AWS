@@ -1,0 +1,971 @@
+ 
+
+Terraform: 
+
+Terraform is an infrastructure-as-code software tool created by HashiCorp. Users define and provide data center infrastructure using a declarative configuration language known as HashiCorp Configuration Language, or optionally JSON 
+
+ 
+
+Terraform as per AWS: 
+
+Terraform is an IaC software tool that provides a consistent command line interface (CLI) workflow to manage hundreds of cloud services. Terraform codifies cloud APIs into declarative configuration files. 
+
+ 
+
+ 
+
+Terraform command: 
+
+Terraform init :- command performs Backend Initialization.  
+
+Terraform plan: - Plan will generate an execution plan. 
+
+Terraform apply: - Create or update infrastructure depending on the configuration files 
+
+Terraform destroy: -   Destroy the infrastructure managed by Terraform 
+
+Terraform output: - values let you export structured data about your resources 
+
+             (ex: terraform output secret_access_key) 
+
+ 
+
+ 
+
+[] firstly, we need to give AWS configure  
+
+ 
+
+[] To check which user added to aws configure  
+
+        [] aws sts get-caller-identity --region us-east-1    
+
+ 
+
+ 
+
+To create user with password, access key and secret key: 
+
+  
+
+provider "aws" { 
+
+  region = "us-east-1" 
+
+} 
+
+  
+
+resource "aws_iam_user" "devops" { 
+
+  name = "devops" 
+
+} 
+
+  
+
+resource "aws_iam_access_key" "devops_key" { 
+
+user = aws_iam_user.devops.name 
+
+} 
+
+  
+
+resource "aws_iam_user_login_profile" "devops_login_profile" { 
+
+user    = aws_iam_user.devops.name 
+
+} 
+
+  
+
+output "password" { 
+
+value = aws_iam_user_login_profile.devops_login_profile.password 
+
+sensitive = true 
+
+} 
+
+  
+
+  
+
+output "access_key_id" { 
+
+value = aws_iam_access_key.devops_key.id 
+
+} 
+
+  
+
+output "secret_access_key" { 
+
+  value     = aws_iam_access_key.devops_key.secret 
+
+  sensitive = true 
+
+} 
+
+ 
+
+ 
+
+ 
+
+ 
+
+To check secret key and password  
+
+ 
+
+[] terraform output -json secret_access_key  
+
+                              OR  
+
+[] terraform output secret_access_key (secret_access_key  we will mention how we will mention in code)  
+
+[] terraform output password  
+
+ 
+
+ 
+
+To create multiple users with access key and secrete access key: 
+
+  
+
+ 
+
+provider "aws" { 
+
+  region = "us-east-1"  # Specify your AWS region 
+
+} 
+
+  
+
+variable "user_names" { 
+
+  type    = list(string) 
+
+  default = ["user1", "user2", "user3"]  # Add your desired IAM usernames here 
+
+} 
+
+  
+
+resource "aws_iam_user" "users" { 
+
+  for_each = toset(var.user_names) 
+
+  name     = each.key 
+
+} 
+
+  
+
+resource "aws_iam_access_key" "users" { 
+
+  for_each = aws_iam_user.users 
+
+  user     = each.key 
+
+  
+
+  lifecycle { 
+
+    ignore_changes = [pgp_key]  # To avoid recreation of the key 
+
+  } 
+
+} 
+
+  
+
+output "access_keys" { 
+
+value = { for k, v in aws_iam_access_key.users : k => v.id } 
+
+  sensitive = true 
+
+} 
+
+  
+
+output "secret_keys" { 
+
+  value = { for k, v in aws_iam_access_key.users : k => v.secret } 
+
+  sensitive = true 
+
+} 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+To create s3 bucket:  
+
+  
+
+provider "aws" { 
+
+  region = "us-east-1" 
+
+   
+
+} 
+
+  
+
+resource "aws_s3_bucket" "my_bucket" { 
+
+  bucket = "kanchana987" 
+
+  
+
+  acl = "private" 
+
+  
+
+  tags = { 
+
+    Name        = "My bucket" 
+
+    Environment = "Dev" 
+
+  } 
+
+  
+
+  versioning { 
+
+    enabled = true 
+
+  } 
+
+} 
+
+ 
+
+To create S3 bucket with policy: 
+
+  
+
+provider "aws" { 
+
+  region = "us-east-1"  # Replace with your desired region 
+
+} 
+
+  
+
+resource "aws_s3_bucket" "example_bucket" { 
+
+  bucket = "examplee1345" 
+
+# acl    = "private" 
+
+} 
+
+# Define the policy document 
+
+data "aws_iam_policy_document" "s3_access" { 
+
+  statement { 
+
+   # effect    = ["Allow"] 
+
+    actions   = ["s3:GetBucketLocation", "s3:ListAllMyBuckets"] 
+
+    resources = ["arn:aws:s3:::*"] 
+
+  } 
+
+  
+
+  statement { 
+
+     
+
+    actions   = ["s3:PutObject", "s3:GetObject",  "s3:AbortMultipartUpload", "s3:ListBucket","s3:GetObjectVersion","s3:ListMultipartUploadParts", "s3:PutObjectAcl",   "s3:GetBucketVersioning", "s3:GetBucketTagging" ] 
+
+    resources = ["arn:aws:s3:::examplee1345"] 
+
+  } 
+
+} 
+
+  
+
+# Create the IAM policy 
+
+resource "aws_iam_policy" "s3_access_policy" { 
+
+  name   = "S3AccessPolicy" 
+
+  policy = data.aws_iam_policy_document.s3_access.json 
+
+} 
+
+  
+
+# Attach the policy to the IAM user 
+
+resource "aws_iam_user_policy_attachment" "s3_access_attachment" { 
+
+  user       = "kanchana" 
+
+  policy_arn = aws_iam_policy.s3_access_policy.arn 
+
+} 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ EC2 instances launching by creating security group: 
+
+ 
+
+  
+
+provider "aws" { 
+
+  region = "us-east-2" 
+
+} 
+
+  
+
+resource "aws_security_group" "example" { 
+
+  name        = "example-sg" 
+
+  #description = "Example security group" 
+
+  vpc_id      = "vpc-02a5703a904694837" 
+
+  
+
+  ingress { 
+
+    from_port   = 0 
+
+    to_port     = 0 
+
+    protocol    = "all" 
+
+    cidr_blocks = ["0.0.0.0/0"] 
+
+  } 
+
+  
+
+  ingress { 
+
+    from_port   = 0 
+
+    to_port     = 0 
+
+    protocol    = "all" 
+
+    cidr_blocks = ["0.0.0.0/0"] 
+
+  } 
+
+  
+
+  egress { 
+
+   from_port   = 0 
+
+    to_port     = 0 
+
+    protocol    = "all" 
+
+    cidr_blocks = ["0.0.0.0/0"] 
+
+  } 
+
+} 
+
+  
+
+resource "aws_instance" "example" { 
+
+  ami           = "ami-09040d770ffe2224f" 
+
+  instance_type = "t2.micro"  
+
+   key_name = "kanchana" 
+
+  security_groups = [aws_security_group.example.name] 
+
+  
+
+  tags = { 
+
+    Name = "ExampleInstance" 
+
+  } 
+
+} 
+
+   
+
+ 
+
+Launch the ec2 instances by creating vpc, subnet, Internet Gateway, Route Table 
+
+ 
+
+provider "aws" { 
+
+  region = "us-east-2" 
+
+   
+
+} 
+
+  
+
+# VPC 
+
+resource "aws_vpc" "main" { 
+
+cidr_block = "10.0.0.0/16" 
+
+  
+
+  tags = { 
+
+    Name = "main-vpc" 
+
+  } 
+
+} 
+
+  
+
+# Subnets 
+
+resource "aws_subnet" "subnet1" { 
+
+vpc_id = aws_vpc.main.id 
+
+cidr_block = "10.0.1.0/24" 
+
+  availability_zone = "us-east-2a" 
+
+  
+
+  tags = { 
+
+    Name = "subnet1" 
+
+  } 
+
+} 
+
+# Internet Gateway 
+
+resource "aws_internet_gateway" "igw" { 
+
+vpc_id = aws_vpc.main.id 
+
+  
+
+  tags = { 
+
+    Name = "main-igw" 
+
+  } 
+
+} 
+
+  
+
+# Route Table 
+
+resource "aws_route_table" "rt" { 
+
+vpc_id = aws_vpc.main.id 
+
+  
+
+  route { 
+
+    cidr_block = "0.0.0.0/0" 
+
+gateway_id = aws_internet_gateway.igw.id 
+
+  } 
+
+  
+
+  tags = { 
+
+    Name = "main-route-table" 
+
+  } 
+
+} 
+
+  
+
+# Route Table Associations 
+
+resource "aws_route_table_association" "a" { 
+
+subnet_id = aws_subnet.subnet1.id 
+
+route_table_id = aws_route_table.rt.id 
+
+} 
+
+  
+
+# Security Group allowing all traffic (for testing purposes) 
+
+resource "aws_security_group" "allow_all" { 
+
+vpc_id = aws_vpc.main.id 
+
+  
+
+  ingress { 
+
+  from_port   = 0  
+
+  to_port     = 0  
+
+  protocol    = "all"  
+
+  cidr_blocks = ["0.0.0.0/0"]  
+
+  } 
+
+  
+
+  egress { 
+
+   from_port   = 0  
+
+   to_port     = 0  
+
+   protocol    = "all"  
+
+  cidr_blocks = ["0.0.0.0/0"]  
+
+  } 
+
+  
+
+  tags = { 
+
+    Name = "allow_all" 
+
+  } 
+
+} 
+
+  
+
+resource "aws_instance" "web_instance" { 
+
+  ami           = "ami-09040d770ffe2224f" 
+
+  instance_type = "t2.micro" 
+
+  key_name      = "kanchana" 
+
+subnet_id  = aws_subnet.subnet1.id     ---------> (what we mention in resource while creating subnet) 
+
+  vpc_security_group_ids      = [aws_security_group.allow_all.id]  ---------> (what we mention in resource while creating security group) 
+
+ 
+
+  associate_public_ip_address = true 
+
+} 
+
+ 
+
+ 
+
+  
+
+  
+
+  
+
+ 
+
+    To stopped/running the instance: 
+
+  
+
+provider "aws" { 
+
+  region = "us-east-2" 
+
+} 
+
+  
+
+resource "aws_ec2_instance_state" "example" { 
+
+  instance_id = "i-017b6160db98c8d2b" 
+
+  state       = "running" 
+
+} 
+
+ 
+
+ To delete IAM users: 
+
+[] terraform destroy -target=aws_iam_user.example_user 
+
+ 
+
+Attach the local policy file to terraform file:  
+
+ policy file and terraform file are in same directory.   
+
+ 
+
+ 
+
+[] S3_policy.json  
+
+ 
+
+{ 
+
+"Version": "2012-10-17", 
+
+"Statement": [ 
+
+{ 
+
+"Effect": "Allow", 
+
+"Action": [ 
+
+"s3:GetBucketLocation", 
+
+"s3:ListAllMyBuckets" 
+
+], 
+
+"Resource": "arn:aws:s3:::*" 
+
+}, 
+
+{ 
+
+"Effect": "Allow", 
+
+"Action": [ 
+
+"s3:PutObject", 
+
+"s3:GetObject", 
+
+"s3:AbortMultipartUpload", 
+
+"s3:ListBucket", 
+
+"s3:DeleteObject", 
+
+"s3:GetObjectVersion", 
+
+"s3:ListMultipartUploadParts", 
+
+"s3:PutObjectAcl", 
+
+"s3:GetBucketVersioning", 
+
+"s3:GetBucketTagging" 
+
+], 
+
+"Resource": [ 
+
+"arn:aws:s3:::examplee123", 
+
+"arn:aws:s3:::examplee123/*" 
+
+] 
+
+} 
+
+] 
+
+} 
+
+ 
+
+ 
+
+ 
+
+[] Policy.tf 
+
+data "local_file" "s3_policy" { 
+
+  filename = "${path.root}/s3_policy.json" 
+
+} 
+
+  
+
+  
+
+resource "aws_iam_policy" "s3_policy" { 
+
+  name   = "S3PolicyFromFile1" 
+
+  policy = data.local_file.s3_policy.content 
+
+} 
+
+  
+
+  
+
+resource "aws_iam_user_policy_attachment" "s3_policy_attachment" { 
+
+  user       = "kanchana" 
+
+  policy_arn = aws_iam_policy.s3_policy.arn 
+
+} 
+
+ 
+
+ Modify the username:  
+
+provider "aws" { 
+
+  region = "us-east-1" 
+
+} 
+
+  
+
+resource "aws_iam_user" "siva12" { 
+
+  name = "siva12" 
+
+} 
+
+ 
+
+ 
+
+Launching ec2 instances with installing nginx:  
+
+  
+
+provider "aws" {  
+
+  
+
+  region = "us-east-2"  
+
+  
+
+}  
+
+  
+
+   
+
+  
+
+resource "aws_security_group" "example" {  
+
+  
+
+  name        = "example-sg"  
+
+  
+
+  #description = "Example security group"  
+
+  
+
+  vpc_id      = "vpc-02a5703a904694837"  
+
+  
+
+   
+
+  
+
+  ingress {  
+
+  
+
+    from_port   = 0  
+
+  
+
+    to_port     = 0  
+
+  
+
+    protocol    = "all"  
+
+  
+
+    cidr_blocks = ["0.0.0.0/0"]  
+
+  
+
+  }  
+
+  
+
+   
+
+  
+
+  ingress {  
+
+  
+
+    from_port   = 0  
+
+  
+
+    to_port     = 0  
+
+  
+
+    protocol    = "all"  
+
+  
+
+    cidr_blocks = ["0.0.0.0/0"]  
+
+  
+
+  }  
+
+  
+
+   
+
+  
+
+  egress {  
+
+  
+
+   from_port   = 0  
+
+  
+
+    to_port     = 0  
+
+  
+
+    protocol    = "all"  
+
+  
+
+    cidr_blocks = ["0.0.0.0/0"]  
+
+  
+
+  }  
+
+  
+
+}  
+
+  
+
+   
+
+  
+
+resource "aws_instance" "example" {  
+
+  
+
+  ami           = "ami-09040d770ffe2224f"  
+
+  
+
+  instance_type = "t2.micro"   
+
+  
+
+   key_name = "kanchana"  
+
+  
+
+  security_groups = [aws_security_group.example.name]  
+
+  
+
+   
+
+  
+
+  tags = {  
+
+  
+
+    Name = "ExampleInstance"  
+
+  
+
+  }  
+
+user_data = <<-EOF 
+
+    #!/bin/bash 
+
+    apt-get update -y 
+
+    apt-get install nginx -y 
+
+    systemctl start nginx 
+
+    EOF 
+
+} 
+
+ 
+
+ 
+
+ 
+
+ 
