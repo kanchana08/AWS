@@ -3,7 +3,8 @@ using lambda function with Api gateway as trigger Controle the Ec2 instances.
 
 [] create lambda function. 
 [] On the Configuration tab, choose General configuration, and then choose Edit. Set Timeout to 10 seconds, and then choose Save. 
-[] add permission to lambda role, i.e. ec2 full access and API gateway  
+[] add permission to lambda role, i.e. ec2 full access and API gateway.
+(go to IAM, select role, choose which we create lambda add the permissions) 
 
 [] create Api gateway for trigger. 
 [] select add trigger  
