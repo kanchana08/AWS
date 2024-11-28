@@ -1,0 +1,17 @@
+when we tyring to install aws cli we will get one error
+
+[] .'. sudo apt  install awscli
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+Package awscli is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'awscli' has no installation candidate
+
+       To Fix that:
+
+[] sudo snap install aws-cli --classic
+[] aws --version
+aws-cli/1.16.266 Python/3.5.2 Linux/5.0.0-37-generic botocore/1.13.2
